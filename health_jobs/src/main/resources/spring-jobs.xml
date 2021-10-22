@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <!-- 指定应用名称 -->
+    <dubbo:application name="health_jobs" />
+    <!--指定服务注册中心地址-->
+    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
+
+    <!--因为任务类中使用了dubbo，所以要扫包-->
+    <dubbo:annotation package="com.health.job"></dubbo:annotation>
+    
+    <!--配置任务策略类-->
+    <bean id="jobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="cleanImgJob"></property>
+        <property name="targetMethod" value="cleanImg"></property>
+        <!--   并发 concurrent=false 单线程
+       value为true时: 在规定的周期内任务没完成时，又触发新的任务，属于同一任务时。使用多线程来处理任务-->
+        <property name="concurrent" value="false"></property>
+    </bean>
+
+    <!--配置任务触发器-->
+    <bean id="trigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <!--  从0秒开始，每间隔2秒触发一次
+                通过cron表达式可以灵活的定义出符合要求的程序执行的时间；俗称七子表达式 空格隔开
+                秒 分 时 日 月 周 年（省略，每年）-->
+        <property name="cronExpression" value="0/30 * * * * ?"></property>
+        <!--触发时使用的策略-->
+        <property name="jobDetail" ref="jobDetail"></property>
+    </bean>
+    <!--配置任务调度容器-->
+    <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+            <list>
+                <ref bean="trigger"/>
+            </list>
+        </property>
+    </bean>
+
+
+</beans>

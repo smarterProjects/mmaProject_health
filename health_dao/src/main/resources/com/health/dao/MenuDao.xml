@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.health.dao.MenuDao">
+
+    <select id="findMenus" parameterType="String" resultType="Menu">
+        SELECT DISTINCT m.*
+        FROM t_user u
+        JOIN t_user_role ur ON u.id = ur.user_id
+        JOIN t_role r ON r.id = ur.role_id
+        JOIN t_role_menu rm ON r.id = rm. role_id
+        JOIN t_menu m ON m.id = rm.menu_id
+        WHERE u.username = #{name} AND m.parentMenuId IS NULL
+    </select>
+
+    <select id="findChildrenMenuByParentId" parameterType="int" resultType="Menu">
+        SELECT distinct * FROM t_menu WHERE parentMenuId=#{parentMenuId}
+    </select>
+</mapper>
